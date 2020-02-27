@@ -2,18 +2,20 @@ let doc = """
 Prettybib.
 
 Usage:
-  prettybib <file> [--output <output>] [--indent <count>] [--preserve-order]
+  prettybib <file> [--output <output>] [--indent <count>] [--max-line-length <length>] [--preserve-order]
   prettybib (-h | --help)
   prettybib --version
 
 Options:
-  -h --help              Show this screen.
-  --version              Show version.
-  -o --output <output>   File to write output to.
-  -i --indent <count>    Number of spaces used to indent [default: 2].
-  --preserve_order       Preserve order of bibtex entries as read.
+  -h --help                       Show this screen.
+  --version                       Show version.
+  -o --output <output>            File to write output to.
+  -i --indent <count>             Number of spaces used to indent [default: 2].
+  -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 80].
+  --preserve_order                Preserve order of bibtex entries for an item as read.
 """
-import docopt, streams, tables, strutils, sequtils
+import docopt, streams, tables, strutils, sequtils#, wordwrap
+import std/wordwrap
 
 proc is_not_terminated(content: string): bool =
   let not_ended_by_delim = not (content.endsWith("},") or content.endsWith("\","))
@@ -81,7 +83,7 @@ proc parse_bibfile(strm: Stream): seq[Table[string, string]] =
     strm.close()
 
 
-proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: Natural) =
+proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: Natural, max_line_length: Natural) =
   for entry in entries:
     strm.writeLine(entry["kind"] & "{" & entry["id"] & ",")
     for k,v in entry.pairs:
@@ -89,15 +91,22 @@ proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: N
       if k == "url" and "doi" in entry:
         if v.endsWith(entry["doi"]): continue
           
+      if v.all(isDigit):
+        strm.writeLine(v & ",")
+        continue
+      
+      let start = " ".repeat(indent) & k & " = "
+      strm.write(start)
+      let multi = wrapWords(v, max_line_length-start.len-3, false).replace("\n", "\n" & " ".repeat(start.len+1))
       var value: string
-      if v.all(isDigit): value = v
-      else: value = "{" & v & "}"
-      strm.writeLine(" ".repeat(indent) & k & " = " & value & ",")
+      if multi.contains("@"): value = "\"" & multi & "\""
+      else: value = "{" & multi & "}"
+      strm.writeLine(value & ",")
     strm.writeLine("}\n")
 
 
 when isMainModule:
-  let args = docopt(doc, version = "0.1.0")
+  let args = docopt(doc, version = "0.2.0")
   echo args
 
   var strm = newFileStream($args["<file>"], fmRead)
@@ -106,4 +115,4 @@ when isMainModule:
   var f = newFileStream(stdout)
   if args["--output"]: f = newFileStream($args["--output"], fmWrite)
 
-  f.write_bib_file(entries, parseInt($args["--indent"]))
+  f.write_bib_file(entries, parseInt($args["--indent"]), parseInt($args["--max-line-length"]))
