@@ -91,12 +91,12 @@ proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: N
       if k == "url" and "doi" in entry:
         if v.endsWith(entry["doi"]): continue
           
+      let start = " ".repeat(indent) & k & " = "
+      strm.write(start)
       if v.all(isDigit):
         strm.writeLine(v & ",")
         continue
-      
-      let start = " ".repeat(indent) & k & " = "
-      strm.write(start)
+
       let multi = wrapWords(v, max_line_length-start.len-3, false).replace("\n", "\n" & " ".repeat(start.len+1))
       var value: string
       if multi.contains("@"): value = "\"" & multi & "\""
@@ -106,7 +106,7 @@ proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: N
 
 
 when isMainModule:
-  let args = docopt(doc, version = "0.2.0")
+  let args = docopt(doc, version = "0.2.1")
   echo args
 
   var strm = newFileStream($args["<file>"], fmRead)
