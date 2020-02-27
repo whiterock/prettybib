@@ -2,7 +2,7 @@ let doc = """
 Prettybib.
 
 Usage:
-  prettybib <file> [--output <output>] [--indent <count>] [--max-line-length <length>] [--preserve-order]
+  prettybib <file> [--output <output>] [--indent <count>] [--max-line-length <length>] [--keep-url-if-doi] [--preserve-order]
   prettybib (-h | --help)
   prettybib --version
 
@@ -12,7 +12,9 @@ Options:
   -o --output <output>            File to write output to.
   -i --indent <count>             Number of spaces used to indent [default: 2].
   -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 80].
-  --preserve_order                Preserve order of bibtex entries for an item as read.
+  --keep-url-if-doi               Keeps the url field if it contains the doi set in the doi field.
+                                  Normally it would be removed due to ugly redundancy.
+  --preserve-order                Preserve order of bibtex entries for an item as read.
 """
 import docopt, streams, tables, strutils, sequtils#, wordwrap
 import std/wordwrap
@@ -82,16 +84,21 @@ proc parse_bibfile(strm: Stream): seq[Table[string, string]] =
 
     strm.close()
 
+func get_max_key_len(entries: seq[Table[string, string]]): Natural =
+  for entry in entries:
+    for k in entry.keys:
+      if k.len > result: result = k.len
 
-proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: Natural, max_line_length: Natural) =
+proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: Natural, max_line_length: Natural, keep_url_if_doi: bool) =
+  let max_key_len = get_max_key_len(entries)
   for entry in entries:
     strm.writeLine(entry["kind"] & "{" & entry["id"] & ",")
     for k,v in entry.pairs:
       if k == "kind" or k == "id": continue
-      if k == "url" and "doi" in entry:
+      if not keep_url_if_doi and k == "url" and "doi" in entry:
         if v.endsWith(entry["doi"]): continue
           
-      let start = " ".repeat(indent) & k & " = "
+      let start = " ".repeat(indent) & k.alignLeft(max_key_len) & " = "
       strm.write(start)
       if v.all(isDigit):
         strm.writeLine(v & ",")
@@ -106,8 +113,7 @@ proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: N
 
 
 when isMainModule:
-  let args = docopt(doc, version = "0.2.1")
-  echo args
+  let args = docopt(doc, version = "0.3.0")
 
   var strm = newFileStream($args["<file>"], fmRead)
   var entries = parse_bibfile(strm)
@@ -115,4 +121,4 @@ when isMainModule:
   var f = newFileStream(stdout)
   if args["--output"]: f = newFileStream($args["--output"], fmWrite)
 
-  f.write_bib_file(entries, parseInt($args["--indent"]), parseInt($args["--max-line-length"]))
+  f.write_bib_file(entries, parseInt($args["--indent"]), parseInt($args["--max-line-length"]), parseBool($args["--keep-url-if-doi"]))
