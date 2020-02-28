@@ -24,7 +24,7 @@ proc is_not_terminated(content: string): bool =
   let not_ended_by_digit = not (content[content.len-1].isDigit() or (content.endsWith(",") and content[content.len-2].isDigit()))
   return not_ended_by_delim and not_ended_by_digit
 
-proc surrounded_by(s: string, prefix: string, suffix: string = ""): bool = 
+proc surrounded_by*(s: string, prefix: string, suffix: string = ""): bool = 
   var suff: string
   if suffix == "": suff = prefix
   else: suff = suffix
