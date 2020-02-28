@@ -45,18 +45,15 @@ proc parse_bibfile(strm: Stream): seq[Table[string, string]] =
         entry["id"] = t[1].strip(chars={','})
         while strm.readLine(line):
           line = line.strip()
-          # echo "    ", line
           if line == "": continue
           if line == "}": 
-              # echo "ENTRY END"
               break
           var kv = line.split("=")
           var key = kv[0].strip().toLower()
           var content = kv[1].strip()
           
-
-          # This relies on left-hand short circuiting.
           if content.starts_legally:
+            # This relies on left-hand short circuiting.
             while is_not_terminated(content) and strm.readLine(line):
               line = line.strip()
               if line == "}": break
@@ -65,8 +62,10 @@ proc parse_bibfile(strm: Stream): seq[Table[string, string]] =
               if line.endsWith("},") or line.endsWith("\","):
                 break
           else:
-            # TODO: Throw some warning here.
-            # As is now, illegal entries like >>month = apr,<< are parsed one line only as if they were legal.
+            # TODO: Throw some warning here if in output mode.
+            # Currently illegal entries like >>month = apr,<< are parsed one line only as if they were legal.
+            # Entries could also be legal like above, if the corresponding @string fields (abbrevations / substitutions)
+            # are set, but these are not handled as of now.
             discard
           
           content.removeSuffix(',')
