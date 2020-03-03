@@ -1,4 +1,4 @@
-name: Build Native
+name: build
 
 on: [push]
 
