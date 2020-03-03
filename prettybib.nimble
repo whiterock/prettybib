@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.3.0"
 author        = "whiterock"
 description   = "Prettify and normalize .bib files"
 license       = "MIT"

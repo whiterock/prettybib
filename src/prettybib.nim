@@ -88,7 +88,7 @@ func get_max_key_len(entries: seq[Table[string, string]]): Natural =
     for k in entry.keys:
       if k.len > result: result = k.len
 
-proc write_bib_file(strm: Stream, entries: seq[Table[string, string]], indent: Natural, max_line_length: Natural, keep_url_if_doi: bool) =
+proc write_bibfile(strm: Stream, entries: seq[Table[string, string]], indent: Natural, max_line_length: Natural, keep_url_if_doi: bool) =
   let max_key_len = get_max_key_len(entries)
   for entry in entries:
     strm.writeLine(entry["kind"] & "{" & entry["id"] & ",")
@@ -120,4 +120,4 @@ when isMainModule:
   var f = newFileStream(stdout)
   if args["--output"]: f = newFileStream($args["--output"], fmWrite)
 
-  f.write_bib_file(entries, parseInt($args["--indent"]), parseInt($args["--max-line-length"]), parseBool($args["--keep-url-if-doi"]))
+  f.write_bibfile(entries, parseInt($args["--indent"]), parseInt($args["--max-line-length"]), parseBool($args["--keep-url-if-doi"]))
