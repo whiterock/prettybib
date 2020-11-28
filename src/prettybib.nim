@@ -14,7 +14,7 @@ Options:
   -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 80].
   --keep-url-if-doi               Keeps the url field if it contains the doi set in the doi field.
                                   Normally it would be removed due to ugly redundancy.
-  --preserve-order                Preserve order of bibtex entries for an item as read.
+  --preserve-order                Preserve order of bibtex entries for an item as read. (not implemented)
 """
 import docopt, streams, tables, strutils, sequtils#, wordwrap
 import std/wordwrap

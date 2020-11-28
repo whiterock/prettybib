@@ -2,3 +2,4 @@ nimcache/
 nimblecache/
 prettybib
 examples/test.bib
+.DS_STORE
