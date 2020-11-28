@@ -1,7 +1,5 @@
 # prettybib
 
-![build](https://github.com/whiterock/prettybib/workflows/build/badge.svg)
-
 This is a tool for the perfectionist. It aims to prettify and normalize/standardize `.bib` files which are used by bibtex, biblatex, biber, etc. for bibliography management in LaTeX.
 
 ## Motivation
