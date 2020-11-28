@@ -11,7 +11,7 @@ Options:
   --version                       Show version.
   -o --output <output>            File to write output to.
   -i --indent <count>             Number of spaces used to indent [default: 2].
-  -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 80].
+  -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 88].
   --keep-url-if-doi               Keeps the url field if it contains the doi set in the doi field.
                                   Normally it would be removed due to ugly redundancy.
   --preserve-order                Preserve order of bibtex entries for an item as read. (not implemented)
@@ -41,8 +41,16 @@ proc parse_bibfile(strm: Stream): seq[Table[string, string]] =
       if line.startsWith("@") and not line.startsWith("@comment"):
         var entry = initTable[string, string]()
         var t = line.split("{")
-        entry["kind"] = t[0].toLower()
-        entry["id"] = t[1].strip(chars={','})
+        entry["kind"] = t[0].toLower().strip()
+        if t[1].len > 0:
+          entry["id"] = t[1].strip(chars={','})
+        else:
+          while strm.readline(line):
+            line = line.strip()
+            if line.endsWith(','):
+              entry["id"] = line.strip(chars={','})
+              break
+
         while strm.readLine(line):
           line = line.strip()
           if line == "": continue
@@ -112,7 +120,7 @@ proc write_bibfile(strm: Stream, entries: seq[Table[string, string]], indent: Na
 
 
 when isMainModule:
-  let args = docopt(doc, version = "0.3.0")
+  let args = docopt(doc, version = "0.3.1")
 
   var strm = newFileStream($args["<file>"], fmRead)
   var entries = parse_bibfile(strm)
