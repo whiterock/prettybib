@@ -21,7 +21,7 @@ Options:
   --version                       Show version.
   -o --output <output>            File to write output to.
   -i --indent <count>             Number of spaces used to indent [default: 2].
-  -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 80].
+  -l --max-line-length <length>   Maximum line length before word wrapping occurs [default: 88].
   --keep-url-if-doi               Keeps the url field if it contains the doi set in the doi field.
                                   Normally it would be removed due to ugly redundancy.
   --preserve-order                Preserve order of bibtex entries for an item as read. (not implemented)
